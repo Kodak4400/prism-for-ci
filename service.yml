@@ -1,0 +1,13 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: prism-server
+spec:
+  template:
+    spec:
+      containers:
+      - image: asia-northeast1-docker.pkg.dev/${{ secrets.GCLOUD_PROJECT_ID }}/prism/prism-image:${{ env.TAG }}
+        resources:
+          limits:
+            memory: 128M
+            cpu: 1

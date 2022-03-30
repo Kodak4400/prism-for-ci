@@ -1,8 +1,6 @@
 name: Build and Push Image
-on:
-  push:
-    tags:
-      - "*"
+on: [push]
+
 jobs:
   build-and-publish:
     name: Build and Push docker image
@@ -18,26 +16,56 @@ jobs:
         with:
           node-version: 14
           cache: yarn
+          registry-url: 'https://npm.pkg.github.com'
       - name: Yarn install
         run: |
           yarn install
-      - name: Yarn build
+      - name: Yarn build:doc
         run: |
+          yarn build:doc
+      - name: Redoc Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        if: ${{ github.ref == 'refs/heads/main' }}
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs
+      - name: Yarn build:pkg
+        run: |
+          yarn build:pkg
+          cd dist
+          yarn install
           yarn build
+          npm publish
+          cd ..
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Setup Google Cloud
-        uses: google-github-actions/setup-gcloud@master
+        uses: google-github-actions/setup-gcloud@v0
         with:
           service_account_key: ${{ secrets.GCLOUD_AUTH }}
           project_id: ${{ secrets.GCLOUD_PROJECT_ID }}
       - name: Configure docker for artifact registry
         run: |
           gcloud auth configure-docker asia-northeast1-docker.pkg.dev
-      - name: set TAG
+      - name: Set TAG
         run: |
-          echo "TAG=$(echo $GITHUB_REF | awk -F/ '{print $NF}')" >> $GITHUB_ENV
-      - name: Build
+          echo "TAG=$(npx -c 'echo "$npm_package_version"')" >> $GITHUB_ENV
+      - name: Docker Build
         run: |
           docker build -t asia-northeast1-docker.pkg.dev/${{ secrets.GCLOUD_PROJECT_ID }}/prism/prism-image:${{ env.TAG }} ./
-      - name: Push
+      - name: Docker Push
         run: |
           docker push asia-northeast1-docker.pkg.dev/${{ secrets.GCLOUD_PROJECT_ID }}/prism/prism-image:${{ env.TAG }}
+      - name: Deploy to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v0
+        with:
+          service: prism-server
+          image: asia-northeast1-docker.pkg.dev/${{ secrets.GCLOUD_PROJECT_ID }}/prism/prism-image:${{ env.TAG }}
+          region: asia-northeast1
+          # metadata: service.yml
+      - name: Public Access Cloud Run
+        run: |
+          gcloud run services add-iam-policy-binding prism-server \
+            --member="allUsers" \
+            --region="asia-northeast1" \
+            --role="roles/run.invoker"

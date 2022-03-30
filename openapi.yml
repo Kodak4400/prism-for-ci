@@ -9,14 +9,30 @@ paths:
   /api/v1/sample:
     get:
       tags:
-        - sample
+        - Sample Tag
       summary: Method:Get Summary Sample
-      description: Getメソッドのサンプル
+      description: Getのサンプル
       parameters:
-        - $ref: '#/components/parameters/contentId'
+        - $ref: '#/components/parameters/ID'
       responses:
         200:
-          $ref: '#/components/responses/OKRequest'
+          $ref: '#/components/responses/Content'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - api_key: []
+    post:
+      tags:
+        - Sample Tag
+      summary: Method:Post Summary Sample
+      description: Postのサンプル
+      requestBody:
+        $ref: '#/components/requestBodies/Content'
+      responses:
+        200:
+          $ref: '#/components/responses/Created'
         400:
           $ref: '#/components/responses/BadRequest'
         500:
@@ -26,20 +42,30 @@ paths:
 
 components:
   securitySchemes:
-    api_key:
+    apiKey:
       type: "apiKey"
       name: "Authorization"
       in: "header"
 
   parameters:
-    contentId:
+    ID:
       in: query
-      name: contentId
+      name: id
       required: false
       schema:
         type: string
       example: '123'
 
+  requestBodies:
+    Content:
+      description: Sample Request Body
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SampleRequestBody'
+          examples:
+            Sample:
+              $ref: '#/components/examples/SampleRequestBody'
   responses:
     BadRequest:
       description: Bad Request
@@ -59,16 +85,25 @@ components:
           examples:
             InternalServerError:
               $ref: '#/components/examples/InternalServerError'
-    OKRequest:
-      description: OK Request
+    Content:
+      description: Get Request OK for Sample API
       content:
         # Response header `Content-Type` & request header `Accept`
         application/json:
           schema:
-            $ref: '#/components/schemas/OK'
+            $ref: '#/components/schemas/Content'
           examples:
-            OKRequest:
-              $ref: '#/components/examples/OKRequest'
+            OK:
+              $ref: '#/components/examples/Content'
+    Created:
+      description: OK Request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Created'
+          examples:
+            Created:
+              $ref: '#/components/examples/Created'
 
   schemas:
     Error:
@@ -86,7 +121,7 @@ components:
         message:
           type: string
           description: Error message
-    OK:
+    Content:
       type: object
       description: OK Request
       properties:
@@ -124,7 +159,6 @@ components:
         publishedAt:
           type: string
           description: 公開日
-
     RelatedBlog:
       type: object
       description: 関連記事
@@ -149,19 +183,50 @@ components:
         url:
           type: string
           description: URL
+    SampleRequestBody:
+      type: object
+      description: Sample Request
+      properties:
+        id:
+          type: string
+          description: ID
+        title:
+          type: string
+          description: タイトル
+        thumbnail:
+          type: string
+          description: サムネイル画像のURL
+        category:
+          type: string
+          description: カテゴリー
+        tags:
+          type: array
+          description: タグリスト
+          items:
+            type: string
+        body:
+          type: string
+          description: 本文
+    Created:
+      type: object
+      description: Sample Request
+      properties:
+        message:
+          type: string
+          description: 成功メッセージ
 
   examples:
     BadRequest:
       value:
         source: contentId
         type: NOT_CONTENT_ID
-        message: Content Id not found.
+        message: Id not found.
     InternalServerError:
       value:
         source: prism
         type: PRISM_ERROR
-        message:  Internal Server Error
-    OKRequest:
+        message: Internal Server Error
+    Content:
       value:
         id: '123'
         title: Sampleタイトル
@@ -190,3 +255,15 @@ components:
         url: https://example.com
         createdAt: '2021-02-08T22:00:00+09:00'
         publishedAt: '2021-02-08T22:00:00+09:00'
+    SampleRequestBody:
+      value:
+        id: '123'
+        title: Sampleタイトル
+        thumbnail: https://example1.com
+        category: カテゴリー
+        tags: ['タグ1', 'タグ2']
+        body: |
+          本文です。
+    Created:
+      value:
+        message: 'Created!!'

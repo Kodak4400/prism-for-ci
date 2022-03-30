@@ -4,11 +4,21 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "dev": "prism mock openapi.yml -h 0.0.0.0 -p 8080"
+    "clean": "rimraf dist",
+    "dev": "prism mock openapi.yml -h 0.0.0.0 -p 8080",
+    "build:doc": "redoc-cli bundle openapi.yml -o docs/index.html",
+    "build:gen": "openapi-generator-cli generate -g typescript-fetch -i ./openapi.yml -o ./dist --additional-properties=modelPropertyNaming=camelCase,supportsES6=true,withInterfaces=true,typescriptThreePlus=true",
+    "build:cp1": "cp ./package.json.api ./dist/package.json",
+    "build:cp2": "cp ./tsconfig.json.api ./dist/tsconfig.json",
+    "build:pkg": "yarn clean && yarn build:gen && yarn build:cp1 && yarn build:cp2"
   },
   "devDependencies": {
+    "@openapitools/openapi-generator-cli": "^2.4.26",
     "@stoplight/prism-cli": "^4.8.0",
     "prism": "^4.1.2",
     "redoc-cli": "^0.13.9"
+  },
+  "dependencies": {
+    "rimraf": "^3.0.2"
   }
 }
