@@ -1,0 +1,192 @@
+---
+openapi: 3.0.1
+info:
+  title: Sample API
+  description: サンプル用のAPI
+  version: 1.0.0
+
+paths:
+  /api/v1/sample:
+    get:
+      tags:
+        - sample
+      summary: Method:Get Summary Sample
+      description: Getメソッドのサンプル
+      parameters:
+        - $ref: '#/components/parameters/contentId'
+      responses:
+        200:
+          $ref: '#/components/responses/OKRequest'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+      security:
+        - api_key: []
+
+components:
+  securitySchemes:
+    api_key:
+      type: "apiKey"
+      name: "Authorization"
+      in: "header"
+
+  parameters:
+    contentId:
+      in: query
+      name: contentId
+      required: false
+      schema:
+        type: string
+      example: '123'
+
+  responses:
+    BadRequest:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            BadRequest:
+              $ref: '#/components/examples/BadRequest'
+    InternalServerError:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            InternalServerError:
+              $ref: '#/components/examples/InternalServerError'
+    OKRequest:
+      description: OK Request
+      content:
+        # Response header `Content-Type` & request header `Accept`
+        application/json:
+          schema:
+            $ref: '#/components/schemas/OK'
+          examples:
+            OKRequest:
+              $ref: '#/components/examples/OKRequest'
+
+  schemas:
+    Error:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        source:
+          type: string
+          description: Error source
+        type:
+          type: string
+          description: Error type
+        message:
+          type: string
+          description: Error message
+    OK:
+      type: object
+      description: OK Request
+      properties:
+        id:
+          type: string
+          description: ID
+        title:
+          type: string
+          description: タイトル
+        thumbnail:
+          type: string
+          description: サムネイル画像のURL
+        category:
+          type: string
+          description: カテゴリー
+        tags:
+          type: array
+          description: タグリスト
+          items:
+            type: string
+        body:
+          type: string
+          description: 本文
+        related_blog:
+          type: array
+          description: 関連記事リスト
+          items:
+            $ref: '#/components/schemas/RelatedBlog'
+        url:
+          type: string
+          description: URL
+        createdAt:
+          type: string
+          description: 作成日
+        publishedAt:
+          type: string
+          description: 公開日
+
+    RelatedBlog:
+      type: object
+      description: 関連記事
+      properties:
+        id:
+          type: string
+          description: ID
+        title:
+          type: string
+          description: タイトル
+        thumbnail:
+          type: string
+          description: サムネイル画像のURL
+        category:
+          type: string
+          description: カテゴリー
+        tags:
+          type: array
+          description: タグリスト
+          items:
+            type: string
+        url:
+          type: string
+          description: URL
+
+  examples:
+    BadRequest:
+      value:
+        source: contentId
+        type: NOT_CONTENT_ID
+        message: Content Id not found.
+    InternalServerError:
+      value:
+        source: prism
+        type: PRISM_ERROR
+        message:  Internal Server Error
+    OKRequest:
+      value:
+        id: '123'
+        title: Sampleタイトル
+        thumbnail: https://example1.com
+        category: カテゴリー
+        tags: ['タグ1', 'タグ2']
+        body: |
+          本文です。
+        related_blog:
+          - {
+              id: '456',
+              title: 関連記事タイトル1,
+              thumbnail: https://sub1example.com,
+              category: カテゴリー,
+              tags: ['タグ3', 'タグ4', 'タグ5'],
+              url: https://sub1example.com,
+            }
+          - {
+              id: '789',
+              title: 関連記事タイトル2,
+              thumbnail: https://sub2example.com,
+              category: カテゴリー,
+              tags: ['タグ6'],
+              url: https://sub2example.com,
+            }
+        url: https://example.com
+        createdAt: '2021-02-08T22:00:00+09:00'
+        publishedAt: '2021-02-08T22:00:00+09:00'

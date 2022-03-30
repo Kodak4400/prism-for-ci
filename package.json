@@ -1,0 +1,14 @@
+{
+  "name": "prism-for-ci",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "dev": "prism mock openapi.yml -h 0.0.0.0 -p 8080"
+  },
+  "devDependencies": {
+    "@stoplight/prism-cli": "^4.8.0",
+    "prism": "^4.1.2",
+    "redoc-cli": "^0.13.9"
+  }
+}
